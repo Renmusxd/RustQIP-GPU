@@ -31,7 +31,7 @@ var<storage, read> mat_data : MatrixData;
 [[stage(compute), workgroup_size(1)]]
 fn main([[builtin(global_invocation_id)]] global_id: vec3<u32>) {
     let total = arrayLength(&src.state);
-    let matn = arrayLength(&mat_indices.indices);
+    let matn = mat_indices.indices[0];
     let index = global_id.x;
     if (index >= total) {
         return;
@@ -39,14 +39,14 @@ fn main([[builtin(global_invocation_id)]] global_id: vec3<u32>) {
 
     var matrix_mask: u32 = 0u;
     for(var j: u32 = 0u; j < matn; j = j + 1u) {
-        matrix_mask = matrix_mask | (1u << mat_indices.indices[j]);
+        matrix_mask = matrix_mask | (1u << mat_indices.indices[j+1u]);
     }
     var template_index: u32 = index & !matrix_mask;
 
     var matrix_row: u32 = 0u;
     for(var j: u32 = 0u; j < matn; j = j + 1u) {
         matrix_row = matrix_row << 1u;
-        matrix_row = matrix_row | (index >> mat_indices.indices[j]) & 1u;
+        matrix_row = matrix_row | (index >> mat_indices.indices[j+1u]) & 1u;
     }
 
     var real_acc: f32 = 0.0;
@@ -56,7 +56,7 @@ fn main([[builtin(global_invocation_id)]] global_id: vec3<u32>) {
 
         var source_index = template_index;
         for(var j: u32 = 0u; j < matn; j = j + 1u) {
-            source_index = source_index | ((matrix_column >> j) & 1u) << mat_indices.indices[j];
+            source_index = source_index | ((matrix_column >> j) & 1u) << mat_indices.indices[j+1u];
         }
 
         real_acc = real_acc + (mat_data.data[matrix_index].real * src.state[source_index].real) - (mat_data.data[matrix_index].imag * src.state[source_index].imag);
