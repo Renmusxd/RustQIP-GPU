@@ -47,4 +47,17 @@ fn main() {
     ));
 
     println!("{:?}", state.into_state(Representation::BigEndian));
+
+    let mut state = pollster::block_on(qip_gpu::GPUBackend::<3>::new_async_fullstate(
+        2,
+        vec![
+            Complex { re: 1.0, im: 0.0 },
+            Complex { re: 2.0, im: 0.0 },
+            Complex { re: 3.0, im: 0.0 },
+            Complex { re: 4.0, im: 0.0 },
+        ],
+    ));
+    let res = state.stochastic_measure(&[0], 0.0);
+
+    println!("{:?}", res);
 }
